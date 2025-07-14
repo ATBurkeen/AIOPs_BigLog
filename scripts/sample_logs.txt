@@ -1,0 +1,71 @@
+2023-05-10 08:15:23 [INFO] [SystemInit] System startup initiated
+2023-05-10 08:15:25 [INFO] [ConfigManager] Loading configuration from /etc/app/config.yaml
+2023-05-10 08:15:26 [INFO] [DatabaseConnector] Connecting to database at db-server:3306
+2023-05-10 08:15:28 [INFO] [DatabaseConnector] Database connection established successfully
+2023-05-10 08:15:30 [INFO] [CacheManager] Initializing Redis cache
+2023-05-10 08:15:31 [INFO] [CacheManager] Cache initialized successfully
+2023-05-10 08:15:35 [INFO] [AuthService] Authentication service started on port 8080
+2023-05-10 08:15:37 [INFO] [ApiServer] API server started on port 9000
+2023-05-10 08:15:40 [INFO] [SystemInit] System startup completed in 17.0 seconds
+2023-05-10 08:30:12 [INFO] [UserService] User login: user_id=1001, username="admin"
+2023-05-10 08:35:45 [INFO] [ApiServer] Received request: GET /api/v1/users/1001
+2023-05-10 08:35:46 [INFO] [DatabaseConnector] Executing query: SELECT * FROM users WHERE id = 1001
+2023-05-10 08:35:46 [INFO] [ApiServer] Request completed in 56ms: GET /api/v1/users/1001
+2023-05-10 09:12:18 [WARN] [CacheManager] Cache hit ratio below threshold: 65% (threshold: 70%)
+2023-05-10 09:45:22 [INFO] [BackupService] Starting scheduled database backup
+2023-05-10 09:46:45 [INFO] [BackupService] Database backup completed successfully: size=256MB, duration=83s
+2023-05-10 10:23:15 [ERROR] [DatabaseConnector] Connection to database lost: db-server:3306
+2023-05-10 10:23:16 [INFO] [DatabaseConnector] Attempting to reconnect to database (attempt 1/5)
+2023-05-10 10:23:18 [INFO] [DatabaseConnector] Database connection re-established
+2023-05-10 10:30:45 [WARN] [SystemMonitor] High CPU usage detected: 87%
+2023-05-10 10:31:12 [WARN] [SystemMonitor] Memory usage exceeds 80% threshold: 83%
+2023-05-10 10:35:22 [INFO] [SystemMonitor] CPU usage returned to normal: 45%
+2023-05-10 11:05:17 [INFO] [ApiServer] Received request: POST /api/v1/orders
+2023-05-10 11:05:18 [ERROR] [ApiServer] Request validation failed: Missing required field 'customer_id'
+2023-05-10 11:05:45 [INFO] [ApiServer] Received request: POST /api/v1/orders
+2023-05-10 11:05:46 [INFO] [DatabaseConnector] Executing query: INSERT INTO orders (customer_id, total, status) VALUES (2001, 159.99, 'pending')
+2023-05-10 11:05:47 [INFO] [ApiServer] Order created successfully: order_id=5001
+2023-05-10 11:05:47 [INFO] [ApiServer] Request completed in 120ms: POST /api/v1/orders
+2023-05-10 11:30:22 [INFO] [NotificationService] Sending order confirmation email to customer: customer_id=2001
+2023-05-10 11:30:25 [INFO] [NotificationService] Email sent successfully
+2023-05-10 12:15:30 [ERROR] [FileStorage] Failed to write file: /var/data/uploads/image.jpg - Permission denied
+2023-05-10 12:15:32 [WARN] [FileStorage] Retrying with fallback storage
+2023-05-10 12:15:35 [INFO] [FileStorage] File written successfully to fallback location
+2023-05-10 13:05:12 [WARN] [SystemMonitor] Disk space is running low: 15% free
+2023-05-10 13:20:45 [INFO] [CleanupService] Starting cleanup of temporary files
+2023-05-10 13:21:30 [INFO] [CleanupService] Cleanup completed: Removed 1250 temporary files (2.3GB)
+2023-05-10 13:25:15 [INFO] [SystemMonitor] Disk space after cleanup: 28% free
+2023-05-10 14:10:22 [ERROR] [DatabaseConnector] Query execution failed: Timeout after 30s for query SELECT * FROM orders WHERE created_at > '2023-01-01' ORDER BY total DESC
+2023-05-10 14:10:25 [WARN] [QueryOptimizer] Detected inefficient query pattern, suggesting optimization
+2023-05-10 14:15:45 [INFO] [UserService] User login: user_id=1002, username="operator"
+2023-05-10 14:30:12 [INFO] [ConfigManager] Configuration updated by user: user_id=1002
+2023-05-10 14:30:15 [INFO] [SystemInit] Applying configuration changes
+2023-05-10 14:30:18 [INFO] [SystemInit] Configuration changes applied successfully
+2023-05-10 15:05:30 [ERROR] [ExternalService] Failed to connect to payment gateway: Connection refused
+2023-05-10 15:05:32 [ERROR] [ExternalService] Retry attempt 1 failed: Connection refused
+2023-05-10 15:05:35 [ERROR] [ExternalService] Retry attempt 2 failed: Connection refused
+2023-05-10 15:05:40 [ERROR] [ExternalService] All retry attempts failed, marking payment processing as unavailable
+2023-05-10 15:05:42 [WARN] [SystemMonitor] External service dependency unavailable: PAYMENT_GATEWAY
+2023-05-10 15:15:22 [INFO] [SystemMonitor] Healthcheck: DATABASE=OK, CACHE=OK, STORAGE=OK, PAYMENT=FAIL
+2023-05-10 15:30:45 [INFO] [ExternalService] Connection to payment gateway restored
+2023-05-10 15:30:47 [INFO] [SystemMonitor] External service dependency restored: PAYMENT_GATEWAY
+2023-05-10 15:45:15 [INFO] [SystemMonitor] Healthcheck: DATABASE=OK, CACHE=OK, STORAGE=OK, PAYMENT=OK
+2023-05-10 16:10:22 [INFO] [UserService] User logout: user_id=1002, username="operator", session_duration=115min
+2023-05-10 16:30:15 [INFO] [BackupService] Starting scheduled configuration backup
+2023-05-10 16:30:45 [INFO] [BackupService] Configuration backup completed successfully
+2023-05-10 17:05:22 [WARN] [SecurityMonitor] Multiple failed login attempts detected for username: "admin"
+2023-05-10 17:05:25 [WARN] [SecurityMonitor] Temporary account lockout applied: username="admin", duration=5min
+2023-05-10 17:15:30 [INFO] [UserService] User login: user_id=1001, username="admin"
+2023-05-10 17:30:45 [INFO] [ApiServer] Received request: GET /api/v1/reports/daily
+2023-05-10 17:32:15 [INFO] [ReportGenerator] Generating daily report for date: 2023-05-09
+2023-05-10 17:34:30 [INFO] [ReportGenerator] Report generation completed in 135s
+2023-05-10 17:34:32 [INFO] [ApiServer] Request completed in 227s: GET /api/v1/reports/daily
+2023-05-10 18:00:15 [INFO] [SchedulerService] Starting end-of-day processing
+2023-05-10 18:05:30 [INFO] [DatabaseConnector] Executing query: UPDATE orders SET status='processed' WHERE status='pending' AND created_at < '2023-05-10 12:00:00'
+2023-05-10 18:05:32 [INFO] [DatabaseConnector] 156 rows affected by update query
+2023-05-10 18:10:45 [INFO] [SchedulerService] End-of-day processing completed successfully
+2023-05-10 18:15:22 [INFO] [UserService] User logout: user_id=1001, username="admin", session_duration=60min
+2023-05-10 23:00:00 [INFO] [SystemMonitor] Daily system statistics: Requests=12548, AvgResponseTime=85ms, ErrorRate=0.8%, ActiveUsers=582
+2023-05-10 23:30:00 [INFO] [BackupService] Starting daily full backup
+2023-05-10 23:45:30 [INFO] [BackupService] Daily backup completed successfully: size=4.2GB, duration=15.5min
+2023-05-10 23:59:59 [INFO] [LogRotationService] Rotating logs for date: 2023-05-10 

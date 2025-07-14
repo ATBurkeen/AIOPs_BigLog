@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+venv/
+ENV/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# VSCode
+.vscode/
+
+# MacOS
+.DS_Store
+
+# Model files
+pretrained/pytorch_model.bin
+
+# Logs
+*.log
+
+# Uploads and results
+scripts/uploads/
+scripts/analysis_results/ 

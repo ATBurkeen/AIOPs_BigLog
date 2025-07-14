@@ -1,0 +1,11 @@
+[
+  {
+    "id": "847d2f1d-bb76-4872-99f7-1ccaa9a1bf8a",
+    "title": "日志事件匹配: 错误",
+    "content": "查询日志: 错误\n\n匹配结果:\n1. 相似度: 91.6% - Mar 15 08:25:15 syslog: last message repeated 3 times\n2. 相似度: 91.3% - 08:24:06 INFO [ReportService] Daily report generation started\n3. 相似度: 90.15% - 08:25:18 [APIClient] Retry attempt 3/3 for request to external service\n4. 相似度: 89.71% - 2024-03-15 08:34:11 INFO [ReportService] Report service optimization: parallel generation enabled\n5. 相似度: 89.64% - 08:31:06 [BackgroundJob] Background job completed: calculate_user_statistics\n\n可视化图表: analysis_results/event_matching_20250708_091810.png",
+    "tags": [],
+    "timestamp": "2025-07-08T09:18:10.696070",
+    "source": "event_matching",
+    "related_image": "analysis_results/event_matching_20250708_091810.png"
+  }
+]

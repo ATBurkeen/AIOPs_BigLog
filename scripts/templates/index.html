@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigLog 统一测试平台</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>BigLog 统一测试平台</h1>
+            <p>智能运维日志分析、事件匹配与知识库管理</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('upload')">文件上传</button>
+            <button class="tab" onclick="showTab('analysis')">日志分析</button>
+            <button class="tab" onclick="showTab('matching')">事件匹配</button>
+            <button class="tab" onclick="showTab('knowledge')">知识库</button>
+            <button class="tab" onclick="showTab('files')">文件管理</button>
+        </div>
+
+        <div class="content">
+            <!-- 文件上传 -->
+            <div id="upload" class="tab-content active">
+                <h2>文件上传</h2>
+                <p>上传日志文件，系统将按"功能+日期"格式自动重命名</p>
+                
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="functionName">功能名称:</label>
+                        <input type="text" id="functionName" name="function_name" class="form-control" 
+                               placeholder="例如: web_server, database, application" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="uploadFile">选择文件:</label>
+                        <input type="file" id="uploadFile" name="file" class="form-control" 
+                               accept=".txt,.log,.csv" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">上传文件</button>
+                </form>
+                
+                <div id="uploadResult"></div>
+            </div>
+
+            <!-- 日志分析 -->
+            <div id="analysis" class="tab-content">
+                <h2>日志分析</h2>
+                <p>对上传的日志文件进行聚类分析和异常检测</p>
+                
+                <form id="analysisForm">
+                    <div class="form-group">
+                        <label for="analysisFile">选择日志文件:</label>
+                        <select id="analysisFile" name="log_file" class="form-control" required>
+                            <option value="">请选择文件...</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">开始分析</button>
+                </form>
+                
+                <div id="analysisResult"></div>
+            </div>
+
+            <!-- 事件匹配 -->
+            <div id="matching" class="tab-content">
+                <h2>事件匹配</h2>
+                <p>基于语义相似度进行日志事件匹配</p>
+                
+                <form id="matchingForm">
+                    <div class="form-group">
+                        <label for="queryLog">查询日志:</label>
+                        <textarea id="queryLog" name="query_log" class="form-control textarea" 
+                                  placeholder="输入要查询的日志内容..." required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="candidateFile">候选日志文件:</label>
+                        <select id="candidateFile" name="candidate_file" class="form-control" required>
+                            <option value="">请选择文件...</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">开始匹配</button>
+                </form>
+                
+                <div id="matchingResult"></div>
+            </div>
+
+            <!-- 知识库 -->
+            <div id="knowledge" class="tab-content">
+                <h2>知识库管理</h2>
+                <p>管理运维知识库，支持语义搜索</p>
+                
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-title">添加知识条目</div>
+                        <form id="addKnowledgeForm">
+                            <div class="form-group">
+                                <label for="knowledgeTitle">标题:</label>
+                                <input type="text" id="knowledgeTitle" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="knowledgeContent">内容:</label>
+                                <textarea id="knowledgeContent" class="form-control textarea" required></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="knowledgeTags">标签 (用逗号分隔):</label>
+                                <input type="text" id="knowledgeTags" class="form-control" 
+                                       placeholder="例如: 错误,数据库,连接">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-success">添加条目</button>
+                        </form>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title">搜索知识库</div>
+                        <form id="searchKnowledgeForm">
+                            <div class="form-group">
+                                <label for="searchQuery">搜索查询:</label>
+                                <input type="text" id="searchQuery" class="form-control" required>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">搜索</button>
+                        </form>
+                        
+                        <div id="searchResult"></div>
+                    </div>
+                </div>
+                
+                <div id="knowledgeList"></div>
+            </div>
+
+            <!-- 文件管理 -->
+            <div id="files" class="tab-content">
+                <h2>文件管理</h2>
+                <p>管理上传的文件和分析结果</p>
+                
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-title">上传的文件</div>
+                        <div id="fileList" class="file-list">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                加载中...
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-title">分析结果</div>
+                        <div id="resultList" class="file-list">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                加载中...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 标签页切换
+        function showTab(tabName) {
+            // 隐藏所有内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 移除所有标签的active类
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 显示选中的内容
+            document.getElementById(tabName).classList.add('active');
+            
+            // 添加active类到选中的标签
+            event.target.classList.add('active');
+            
+            // 如果是文件管理标签，加载文件列表
+            if (tabName === 'files') {
+                loadFiles();
+                loadResults();
+            }
+        }
+        
+        // 程序化切换标签页（用于链接跳转）
+        function switchTab(tabName) {
+            // 隐藏所有内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 移除所有标签的active类
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 显示选中的内容
+            document.getElementById(tabName).classList.add('active');
+            
+            // 添加active类到对应的标签
+            document.querySelector(`.tab[onclick="showTab('${tabName}')"]`).classList.add('active');
+            
+            // 如果是文件管理标签，加载文件列表
+            if (tabName === 'files') {
+                loadFiles();
+                loadResults();
+            }
+            
+            // 如果是知识库标签，刷新知识库
+            if (tabName === 'knowledge') {
+                loadKnowledgeList();
+            }
+        }
+
+        // 显示消息
+        function showMessage(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+        }
+
+        // 显示加载状态
+        function showLoading(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    处理中，请稍候...
+                </div>
+            `;
+        }
+
+        // 文件上传
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            showLoading('uploadResult');
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('uploadResult', result.message, 'success');
+                    e.target.reset();
+                    // 刷新文件列表
+                    updateFileSelects();
+                } else {
+                    showMessage('uploadResult', result.error, 'danger');
+                }
+            } catch (error) {
+                showMessage('uploadResult', '上传失败: ' + error.message, 'danger');
+            }
+        });
+
+        // 日志分析
+        document.getElementById('analysisForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            showLoading('analysisResult');
+            
+            try {
+                const response = await fetch('/analyze_logs', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const report = result.report;
+                    const html = `
+                        <div class="alert alert-success">分析完成!</div>
+                        <div class="stats">
+                            <div class="stat-card">
+                                <div class="stat-number">${report.total_logs}</div>
+                                <div class="stat-label">总日志数</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${report.clusters}</div>
+                                <div class="stat-label">聚类数</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${report.anomalies}</div>
+                                <div class="stat-label">异常数</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${report.anomaly_rate.toFixed(1)}%</div>
+                                <div class="stat-label">异常率</div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">聚类大小分布</div>
+                            <p>${report.cluster_sizes.join(', ')}</p>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">分析图表</div>
+                            <img src="/view_result/${report.plot_path.split('/').pop()}" 
+                                 style="max-width: 100%; height: auto;" alt="分析结果">
+                        </div>
+                    `;
+                    document.getElementById('analysisResult').innerHTML = html;
+                } else {
+                    showMessage('analysisResult', result.error, 'danger');
+                }
+            } catch (error) {
+                showMessage('analysisResult', '分析失败: ' + error.message, 'danger');
+            }
+        });
+
+        // 事件匹配
+        document.getElementById('matchingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            showLoading('matchingResult');
+            
+            try {
+                const response = await fetch('/event_matching', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 创建匹配结果和知识库侧边栏的容器
+                    let html = `<div class="alert alert-success">匹配完成!</div>`;
+                    
+                    // 开始布局容器
+                    html += `<div class="matching-container">`;
+                    
+                    // 主要内容区域
+                    html += `<div class="matching-main">
+                        <div class="card">
+                            <div class="card-title">查询日志</div>
+                            <p>${result.query_log}</p>
+                        </div>
+                        <div class="card">
+                            <div class="card-title">匹配结果 (前10个)</div>
+                    `;
+                    
+                    result.results.forEach((item, index) => {
+                        const similarityPercent = (item.similarity * 100).toFixed(1);
+                        html += `
+                            <div class="result-item">
+                                <div class="result-title">#${item.rank} (相似度: ${similarityPercent}%)</div>
+                                <div class="result-content">${item.log}</div>
+                                <div class="similarity-bar">
+                                    <div class="similarity-fill" style="width: ${similarityPercent}%"></div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    // 显示知识库保存信息
+                    if (result.knowledge_entry) {
+                        html += `
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle"></i> 匹配结果已保存到知识库
+                                <a href="#knowledge" onclick="switchTab('knowledge')">查看知识库</a>
+                            </div>
+                        `;
+                    }
+                    
+                    html += `
+                        </div>
+                        <div class="card">
+                            <div class="card-title">匹配图表</div>
+                            <img src="/view_result/${result.plot_path.split('/').pop()}" 
+                                 style="max-width: 100%; height: auto;" alt="匹配结果">
+                        </div>
+                    </div>`;
+                    
+                    // 知识库侧边栏
+                    html += `<div class="matching-sidebar">
+                        <div class="card">
+                            <div class="card-title">相关知识库条目</div>
+                            <p class="text-muted" style="font-size: 12px; margin-bottom: 10px;">以下是从知识库中找到的相关条目，点击可查看详情</p>`;
+                    
+                    if (result.kb_results && result.kb_results.length > 0) {
+                        html += `<p class="text-muted" style="font-size: 12px; margin-bottom: 10px;">基于日志关键词与知识库标签匹配</p>`;
+                        
+                        result.kb_results.forEach(item => {
+                            const similarityPercent = (item.similarity * 100).toFixed(1);
+                            const entry = item.entry;
+                            
+                            // 截断内容，保持简洁
+                            let content = entry.content;
+                            if (content.length > 150) {
+                                content = content.substring(0, 150) + '...';
+                            }
+                            
+                            // 显示匹配的标签
+                            const matchedTagsHtml = item.matched_tags && item.matched_tags.length > 0 ? 
+                                `<div class="matched-tags">匹配标签: ${item.matched_tags.map(tag => 
+                                    `<span class="tag tag-match">${tag}</span>`).join('')}</div>` : '';
+                                
+                            html += `
+                                <div class="sidebar-entry" onclick="showKnowledgeDetail('${entry.id}')">
+                                    <div class="sidebar-entry-title">${entry.title}</div>
+                                    <div class="sidebar-entry-content">${content}</div>
+                                    ${matchedTagsHtml}
+                                    <div class="similarity-bar">
+                                        <div class="similarity-fill" style="width: ${similarityPercent}%"></div>
+                                    </div>
+                                    <small>匹配度: ${similarityPercent}% (点击查看详情)</small>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        html += `<p class="text-muted">未找到相关知识库条目</p>`;
+                    }
+                    
+                    html += `</div></div>`;
+                    
+                    // 关闭容器
+                    html += `</div>`;
+                    
+                    document.getElementById('matchingResult').innerHTML = html;
+                } else {
+                    showMessage('matchingResult', result.error, 'danger');
+                }
+            } catch (error) {
+                showMessage('matchingResult', '匹配失败: ' + error.message, 'danger');
+            }
+        });
+
+        // 添加知识条目
+        document.getElementById('addKnowledgeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('knowledgeTitle').value;
+            const content = document.getElementById('knowledgeContent').value;
+            const tags = document.getElementById('knowledgeTags').value.split(',').map(t => t.trim()).filter(t => t);
+            
+            try {
+                const response = await fetch('/knowledge_base', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'add',
+                        title: title,
+                        content: content,
+                        tags: tags
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('knowledgeList', '条目添加成功!', 'success');
+                    e.target.reset();
+                    loadKnowledgeList();
+                } else {
+                    showMessage('knowledgeList', result.error, 'danger');
+                }
+            } catch (error) {
+                showMessage('knowledgeList', '添加失败: ' + error.message, 'danger');
+            }
+        });
+
+        // 搜索知识库
+        document.getElementById('searchKnowledgeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const query = document.getElementById('searchQuery').value;
+            
+            try {
+                const response = await fetch('/knowledge_base', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'search',
+                        query: query
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    let html = `<div class="alert alert-info">找到 ${result.count} 个结果</div>`;
+                    
+                    result.results.forEach(item => {
+                        const similarityPercent = (item.similarity * 100).toFixed(1);
+                        html += `
+                            <div class="knowledge-entry">
+                                <div class="entry-title">${item.entry.title}</div>
+                                <div class="entry-content">${item.entry.content}</div>
+                                <div class="entry-tags">
+                                    ${item.entry.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                                </div>
+                                <div class="similarity-bar">
+                                    <div class="similarity-fill" style="width: ${similarityPercent}%"></div>
+                                </div>
+                                <small>相似度: ${similarityPercent}%</small>
+                            </div>
+                        `;
+                    });
+                    
+                    document.getElementById('searchResult').innerHTML = html;
+                } else {
+                    showMessage('searchResult', result.error, 'danger');
+                }
+            } catch (error) {
+                showMessage('searchResult', '搜索失败: ' + error.message, 'danger');
+            }
+        });
+
+        // 加载知识库列表
+        async function loadKnowledgeList() {
+            try {
+                const response = await fetch('/knowledge_base');
+                const result = await response.json();
+                
+                if (result.success) {
+                    let html = `<div class="card-title">知识库条目 (${result.count})</div>`;
+                    
+                    result.entries.forEach(entry => {
+                        // 检查是否有关联图像
+                        const hasImage = entry.related_image ? true : false;
+                        const imageHtml = hasImage ? 
+                            `<div class="entry-image">
+                                <img src="/view_result/${entry.related_image.split('/').pop()}" 
+                                     style="max-width: 100%; height: auto;" alt="相关图像">
+                             </div>` : '';
+                             
+                        // 检查是否来自事件匹配
+                        const sourceLabel = entry.source === 'event_matching' ? 
+                            '<span class="badge badge-info">事件匹配</span> ' : '';
+                            
+                        // 确保ID存在且为字符串
+                        const entryId = entry.id ? String(entry.id) : '';
+                        
+                        html += `
+                            <div class="knowledge-entry">
+                                <div class="entry-title">${sourceLabel}${entry.title}</div>
+                                <div class="entry-content">${entry.content}</div>
+                                ${imageHtml}
+                                <div class="entry-tags">
+                                    ${entry.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                                </div>
+                                <div class="btn-group" style="margin-top: 10px;">
+                                    <button class="btn btn-danger btn-sm" onclick="deleteKnowledge('${entryId}')" data-entry-id="${entryId}">删除</button>
+                                </div>
+                                <div style="font-size: 10px; color: #999; margin-top: 5px;">ID: ${entryId}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    document.getElementById('knowledgeList').innerHTML = html;
+                }
+            } catch (error) {
+                console.error('加载知识库失败:', error);
+            }
+        }
+
+        // 删除知识条目
+        async function deleteKnowledge(id) {
+            if (!confirm('确定要删除这个条目吗？')) return;
+            
+            try {
+                console.log(`尝试删除知识库条目，ID: ${id}`);
+                
+                const response = await fetch('/knowledge_base', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'delete',
+                        id: id
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('knowledgeList', '条目删除成功!', 'success');
+                    loadKnowledgeList();
+                } else {
+                    console.error('删除失败:', result.error);
+                    showMessage('knowledgeList', result.error || '删除失败，请查看控制台了解详情', 'danger');
+                }
+            } catch (error) {
+                console.error('删除请求异常:', error);
+                showMessage('knowledgeList', '删除失败: ' + error.message, 'danger');
+            }
+        }
+
+        // 更新文件选择下拉框
+        async function updateFileSelects() {
+            try {
+                const response = await fetch('/files');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const options = result.files.map(file => 
+                        `<option value="${file.name}">${file.name} (${formatFileSize(file.size)})</option>`
+                    ).join('');
+                    
+                    document.getElementById('analysisFile').innerHTML = 
+                        '<option value="">请选择文件...</option>' + options;
+                    document.getElementById('candidateFile').innerHTML = 
+                        '<option value="">请选择文件...</option>' + options;
+                }
+            } catch (error) {
+                console.error('更新文件列表失败:', error);
+            }
+        }
+
+        // 加载文件列表
+        async function loadFiles() {
+            try {
+                const response = await fetch('/files');
+                const result = await response.json();
+                
+                if (result.success) {
+                    let html = '';
+                    result.files.forEach(file => {
+                        html += `
+                            <div class="file-item">
+                                <div class="file-info">
+                                    <div class="file-name">${file.name}</div>
+                                    <div class="file-meta">
+                                        ${formatFileSize(file.size)} | 
+                                        ${new Date(file.modified).toLocaleString()}
+                                    </div>
+                                </div>
+                                <a href="/download/${file.name}" class="btn btn-secondary btn-sm">下载</a>
+                            </div>
+                        `;
+                    });
+                    
+                    document.getElementById('fileList').innerHTML = html || '<p>暂无文件</p>';
+                }
+            } catch (error) {
+                document.getElementById('fileList').innerHTML = '<p>加载失败</p>';
+            }
+        }
+
+        // 加载结果列表
+        async function loadResults() {
+            try {
+                const response = await fetch('/results');
+                const result = await response.json();
+                
+                if (result.success) {
+                    let html = '';
+                    result.results.forEach(file => {
+                        const isImage = file.type === 'image';
+                        html += `
+                            <div class="file-item">
+                                <div class="file-info">
+                                    <div class="file-name">${file.name}</div>
+                                    <div class="file-meta">
+                                        ${formatFileSize(file.size)} | 
+                                        ${new Date(file.modified).toLocaleString()}
+                                    </div>
+                                </div>
+                                <div class="btn-group">
+                                    ${isImage ? 
+                                        `<a href="/view_result/${file.name}" target="_blank" class="btn btn-primary btn-sm">查看</a>` : 
+                                        `<a href="/view_result/${file.name}" class="btn btn-secondary btn-sm">下载</a>`
+                                    }
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    document.getElementById('resultList').innerHTML = html || '<p>暂无结果</p>';
+                }
+            } catch (error) {
+                document.getElementById('resultList').innerHTML = '<p>加载失败</p>';
+            }
+        }
+
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateFileSelects();
+            loadKnowledgeList();
+        });
+        
+        // 显示知识库条目详情
+        async function showKnowledgeDetail(id) {
+            try {
+                // 直接获取指定ID的条目
+                const response = await fetch(`/knowledge_base/${id}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const entry = result.entry;
+                    
+                    if (entry) {
+                        // 创建模态框显示详情
+                        const modal = document.createElement('div');
+                        modal.className = 'modal';
+                        modal.style.position = 'fixed';
+                        modal.style.top = '0';
+                        modal.style.left = '0';
+                        modal.style.width = '100%';
+                        modal.style.height = '100%';
+                        modal.style.backgroundColor = 'rgba(0,0,0,0.7)';
+                        modal.style.zIndex = '1000';
+                        modal.style.display = 'flex';
+                        modal.style.justifyContent = 'center';
+                        modal.style.alignItems = 'center';
+                        
+                        // 检查是否有关联图像
+                        const hasImage = entry.related_image ? true : false;
+                        const imageHtml = hasImage ? 
+                            `<div class="entry-image">
+                                <img src="/view_result/${entry.related_image.split('/').pop()}" 
+                                     style="max-width: 100%; height: auto;" alt="相关图像">
+                             </div>` : '';
+                        
+                        // 模态框内容
+                        modal.innerHTML = `
+                            <div style="background: white; padding: 20px; border-radius: 8px; max-width: 800px; max-height: 80vh; overflow-y: auto; position: relative;">
+                                <button style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 24px; cursor: pointer;" onclick="this.parentElement.parentElement.remove()">×</button>
+                                <h3>${entry.title}</h3>
+                                <div style="white-space: pre-wrap;">${entry.content}</div>
+                                ${imageHtml}
+                                <div style="margin-top: 15px;">
+                                    ${entry.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                                </div>
+                                <div style="margin-top: 15px; font-size: 12px; color: #666;">
+                                    创建时间: ${new Date(entry.timestamp).toLocaleString()}
+                                </div>
+                                <div style="margin-top: 15px; text-align: center;">
+                                    <button class="btn btn-primary" onclick="switchTab('knowledge'); this.parentElement.parentElement.parentElement.remove();">
+                                        在知识库中查看
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // 添加到页面
+                        document.body.appendChild(modal);
+                        
+                        // 点击模态框背景关闭
+                        modal.addEventListener('click', function(e) {
+                            if (e.target === modal) {
+                                modal.remove();
+                            }
+                        });
+                    } else {
+                        console.error('未找到指定ID的知识库条目');
+                    }
+                }
+            } catch (error) {
+                console.error('获取知识库条目详情失败:', error);
+            }
+        }
+    </script>
+</body>
+</html> 
